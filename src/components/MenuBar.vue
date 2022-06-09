@@ -1,7 +1,7 @@
 <template>
 <div class="menu-bar">
     <transition name="slide-up">
-    <div class="menu-wrapper" v-show="ifTitleAndMenuShow">
+    <div class="menu-wrapper" v-show="ifMenuShow">
       <div class="icon-wrapper">
         <span class="icon-menu icon" @click="contentShow"></span>
       </div>
@@ -16,8 +16,13 @@
       </div>
    </div>
    </transition>
-   <Content :ifContentShow="ifContentShow"></Content>
-   <Progress :ifProgressShow="ifProgressShow"></Progress>
+   <Content :ifContentShow="ifContentShow"
+            v-bind="$attrs"
+            :bookAvailable="bookAvailable"
+            v-on="$listeners"></Content>
+   <Progress :ifProgressShow="ifProgressShow"
+             :bookAvailable="bookAvailable"
+             v-on="$listeners"></Progress>
 </div>
 </template>
 
@@ -30,7 +35,11 @@ export default {
     Progress
   },
   props: {
-    ifTitleAndMenuShow: {
+    ifMenuShow: {
+      type: Boolean,
+      default: false
+    },
+    bookAvailable: {
       type: Boolean,
       default: false
     }
@@ -44,9 +53,21 @@ export default {
   methods: {
     contentShow () {
       this.ifContentShow = !this.ifContentShow
+      this.hideProgress()
+      this.$emit('hideTitle')
     },
     progressShow () {
       this.ifProgressShow = !this.ifProgressShow
+      this.hideContent()
+    },
+    hideProgress () {
+      this.ifProgressShow = false
+    },
+    hideContent () {
+      this.ifContentShow = false
+    },
+    jumpTo (target) {
+      this.$emit('jumpTO', target)
     }
   }
 }

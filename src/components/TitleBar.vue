@@ -1,6 +1,6 @@
 <template>
   <transition name="slide-down">
-      <div class="title-wrapper" v-show="ifTitleAndMenuShow">
+      <div class="title-wrapper" v-show="ifTitleShow">
     <div class="left">
       <span class="icon-back icon"></span>
     </div>
@@ -22,7 +22,7 @@
 <script>
 export default {
   props: {
-    ifTitleAndMenuShow: {
+    ifTitleShow: {
       type: Boolean,
       default: false
     }
@@ -53,9 +53,7 @@ export default {
       justify-content: flex-end;
       .icon-wrapper{
         flex: 0 0 px2rem(40);
-        display: flex;
-        justify-content: center;
-        align-items: center;
+        @include center
 
       }
     }

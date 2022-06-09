@@ -1,7 +1,7 @@
 <template>
 <div class="ebook">
   <title-bar
-  :ifTitleAndMenuShow="ifTitleAndMenuShow"></title-bar>
+  :ifTitleShow="ifTitleShow"></title-bar>
   <div class="read-wrapper">
       <div id="read"></div>
       <div class="mask">
@@ -10,7 +10,13 @@
          <div class="right" @click="nextPage"></div>
       </div>
   </div>
-  <menu-bar :ifTitleAndMenuShow="ifTitleAndMenuShow">
+  <menu-bar :ifMenuShow="ifMenuShow"
+            @hideTitle="hideTitle"
+            :bookAvailable="bookAvailable"
+            @jumpTo="jumpTo"
+            @onProgressChange="onProgressChange"
+            :navigation="navigation"
+            ref="menubar">
   </menu-bar>
 
 </div>
@@ -29,16 +35,43 @@ export default {
   },
   data () {
     return {
-      ifTitleAndMenuShow: false
+      ifTitleShow: false,
+      ifMenuShow: false,
+      bookAvailable: false
     }
   },
   methods: {
+    hideTitleAndMenu () {
+      this.ifTitleShow = false
+      this.ifMenuShow = false
+    },
+    hideTitle () {
+      this.ifTitleShow = !this.ifTitleShow
+    },
+    jumpTo (href) {
+      this.rendition.display(href)
+      this.hideTitleAndMenu()
+      this.$refs.menubar.hideProgress()
+      this.$refs.menubar.hideContent()
+    },
+    onProgressChange (progressvalue) {
+      const percentage = progressvalue / 100
+      const location = percentage > 0 ? this.locations.cfiFromPercentage(percentage) : 0
+      this.rendition.display(location)
+    },
     toggleTitleAndMenu () {
-      this.ifTitleAndMenuShow = !this.ifTitleAndMenuShow
+      this.ifTitleShow = !this.ifTitleShow
+      this.ifMenuShow = !this.ifMenuShow
+      this.$refs.menubar.hideProgress()
     },
     prevPage () {
       if (this.rendition) {
         this.rendition.prev()
+        const currentLocation = this.rendition.currentLocation()
+        const progress = this.locations.percentageFromCfi(currentLocation.start.cfi)
+        console.log(progress)
+        // this.progress = progress * 100
+        // this.$refs.progressbar.onProgressInput(this.progress)
       }
     },
     nextPage () {
@@ -54,6 +87,14 @@ export default {
       })
       console.log(this.book)
       this.rendition.display()
+      this.book.ready.then(() => {
+        this.navigation = this.book.navigation
+        return this.book.locations.generate()
+      }).then(result => {
+        this.locations = this.book.locations
+        this.bookAvailable = true
+        // console.log(this.navigation)
+      })
     }
   },
   mounted () {
